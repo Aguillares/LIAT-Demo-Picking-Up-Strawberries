@@ -1,0 +1,22 @@
+[0.595s] Invoking command in '/home/aguillares/interbotix_ws/src/robot_pkg': PYTHONPATH=/home/aguillares/interbotix_ws/src/robot_pkg/build/robot_pkg/prefix_override:/home/aguillares/interbotix_ws/src/robot_pkg/install/robot_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base build/robot_pkg build --build-base /home/aguillares/interbotix_ws/src/robot_pkg/build/robot_pkg/build install --record /home/aguillares/interbotix_ws/src/robot_pkg/build/robot_pkg/install.log --single-version-externally-managed install_data
+[0.824s] running egg_info
+[0.825s] writing build/robot_pkg/robot_pkg.egg-info/PKG-INFO
+[0.825s] writing dependency_links to build/robot_pkg/robot_pkg.egg-info/dependency_links.txt
+[0.825s] writing entry points to build/robot_pkg/robot_pkg.egg-info/entry_points.txt
+[0.825s] writing requirements to build/robot_pkg/robot_pkg.egg-info/requires.txt
+[0.825s] writing top-level names to build/robot_pkg/robot_pkg.egg-info/top_level.txt
+[0.826s] reading manifest file 'build/robot_pkg/robot_pkg.egg-info/SOURCES.txt'
+[0.827s] writing manifest file 'build/robot_pkg/robot_pkg.egg-info/SOURCES.txt'
+[0.827s] running build
+[0.828s] running build_py
+[0.828s] running install
+[0.828s] running install_lib
+[0.829s] running install_data
+[0.829s] running install_egg_info
+[0.830s] removing '/home/aguillares/interbotix_ws/src/robot_pkg/install/robot_pkg/lib/python3.10/site-packages/robot_pkg-0.0.0-py3.10.egg-info' (and everything under it)
+[0.831s] Copying build/robot_pkg/robot_pkg.egg-info to /home/aguillares/interbotix_ws/src/robot_pkg/install/robot_pkg/lib/python3.10/site-packages/robot_pkg-0.0.0-py3.10.egg-info
+[0.832s] running install_scripts
+[0.850s] Installing camera script to /home/aguillares/interbotix_ws/src/robot_pkg/install/robot_pkg/lib/robot_pkg
+[0.850s] Installing robot script to /home/aguillares/interbotix_ws/src/robot_pkg/install/robot_pkg/lib/robot_pkg
+[0.850s] writing list of installed files to '/home/aguillares/interbotix_ws/src/robot_pkg/build/robot_pkg/install.log'
+[0.877s] Invoked command in '/home/aguillares/interbotix_ws/src/robot_pkg' returned '0': PYTHONPATH=/home/aguillares/interbotix_ws/src/robot_pkg/build/robot_pkg/prefix_override:/home/aguillares/interbotix_ws/src/robot_pkg/install/robot_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base build/robot_pkg build --build-base /home/aguillares/interbotix_ws/src/robot_pkg/build/robot_pkg/build install --record /home/aguillares/interbotix_ws/src/robot_pkg/build/robot_pkg/install.log --single-version-externally-managed install_data

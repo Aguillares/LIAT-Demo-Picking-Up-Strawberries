@@ -1,0 +1,4 @@
+[console_scripts]
+camera = robot_pkg.cameraNode:main
+robot = robot_pkg.robotNode:main
+

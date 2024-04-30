@@ -2,7 +2,6 @@ from time import sleep
 import sys
 import numpy as np
 import math
-
 import rclpy
 from rclpy.node import Node
 from rclpy.timer import Timer
@@ -13,17 +12,8 @@ from interbotix_xs_modules.xs_robot.arm import InterbotixManipulatorXS
 class Robot(Node):
     def __init__(self):
         super().__init__('robot')
-        #self.info
-        self.start = True
-        self.angle = 90     # [degree]
-        self.angleJoint = 51
-        self.constant = 0.15
+        self.angleJoint = 51          # [degree]
         self.moving_time = 0.1
-        # [m]
-        self.velocity = 0.2 # [m/s]
-        self.delta = -self.angle
-        self.block1 = True
-        self.block2 = True
         self.deltaJoint = -1
         self.deltaStrawW = -1
         self.deltaStrawZ = 0
@@ -54,10 +44,6 @@ class Robot(Node):
         
         self.initialPosition()
         
-        #self.timer.start()
-        #self.bot.arm.set_ee_pose_components(z=0.55)
-        #self.robot()
-       
         self.subscription = self.create_subscription(
             Float32MultiArray,
             'strawberry_info',  # Topic name to subscribe to
@@ -149,9 +135,6 @@ class Robot(Node):
 def main(args=None):
     rclpy.init(args=args)
     robot = Robot()
-    
-    #robot.
-    
     try:
         rclpy.spin(robot)
     except KeyboardInterrupt:

@@ -36,15 +36,14 @@ class RealSenseCameraNode(Node):
         if not depth_frame or not color_frame:
             return
         color_image = np.asanyarray(color_frame.get_data())
+        # Converting to meters
         depth_image = np.asanyarray(depth_frame.get_data())/1000
         color_image, info = detector(color_image,depth_image)
         color_msg = self.bridge.cv2_to_imgmsg(color_image, encoding='bgr8')
         self.color_publisher.publish(color_msg)
         
         width = len(info[0])
-        
         height = len(info)
-        
         mat = Float32MultiArray()
         mat.layout.dim.append(MultiArrayDimension())
         mat.layout.dim.append(MultiArrayDimension())

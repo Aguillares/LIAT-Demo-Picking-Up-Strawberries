@@ -57,7 +57,6 @@ class RealSenseCameraNode(Node):
         mat.data = [float(0)]*width*height
         
         dstride0 = mat.layout.dim[1].stride
-        dstride1 = mat.layout.dim[0].stride
         offset = mat.layout.data_offset
         
         for i in range(height):

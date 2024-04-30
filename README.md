@@ -132,11 +132,17 @@ Clone this Git-Hub repository in the src folder of the interbotix_ws
               cv2.ellipse(image_with_ellipse, ellipse, (0,0,0), 2, cv2.LINE_AA)
           return image_with_ellipse
 - find_strawberry().
+- 
   **Part 1**
+
+  
+  
   This is the longest function of this code. It will be explained just the key parts to understand the logic of the identification.
   At the beginning there is a supposition that there are not strawberries. We make a copy of the image, we blur it to remove part of the noise. The original image comes as BGR, so we convert it into a RGB, and we convert it again but in HSV because it is easier to work with the images with this format.
 
   At the end we become all the pixels that have bigger distance than 0.7 m into black in the HSV image, because we want to ignore them when we detect the strawberries, since if they are not eliminated things that have the enough size to be considered as strawberry but a little far away can be detected; however, this is not desired insamuch as it can affect the detection due to things that are out of desired range (0.3 to 0.7m) .
+
+  
 
 
       here = False
@@ -150,16 +156,42 @@ Clone this Git-Hub repository in the src folder of the interbotix_ws
             image_blur_hsv[:,:,i] = image_blur_hsv[:,:,i]*matrix
 
    **Part 2**
+
+  We create the different ranges according to the colours, redish and yellow. We make several kernels depending on the task.
+  We erode to remove all the small dots that can interfere with the detection. For the dilatation we have two cases one to exagerate the area of intersection and another smaller one to not deform the strawberry's shape.
+  If there's intersection, it means it's a real strawberry, if there's not, it means it's not a strawberry.
+
+  We get the sum of the number of pixels that are in the intersection. And finding the contour of all that have intersection.
+
+  **IMPORTANT NOTE:**
+  The next explanation is just for yellow-redish strawberry.
+
+  *Case strawberry*
+
+  WITHOUT DILATATION
+  
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/YellowDrawStrawbery.png)
+
+  WITH DILATATION (INTERSECTION)
+  
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/IntersectionDrawStrawbery.png)
+
+  
+  *Case no strawberry*
+
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/FalseYellowStrawberry.png)
+  
+  
       min_redish = np.array([0, int(150), int(104)])
       max_redish = np.array([int(10/255*179), 255, 255])
       maskredish1 = cv2.inRange(image_blur_hsv, min_redish, max_redish)
-      maskRedish = maskredish1+maskredish1
+      maskRedish = maskredish1
       # Intermediate Strawberries
       min_yellow1 = np.array([int(9/255*179),int(130),int(100)])
       max_yellow1 = np.array([int(27/255*179),int(255),int(255)])
-      maskYellow1 = cv2.inRange(image_blur_hsv,min_yellow1,max_yellow1)
+      maskYellow = cv2.inRange(image_blur_hsv,min_yellow1,max_yellow1)
   
-      maskYellow = maskYellow1 + maskYellow1
+     
       
       smallKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
       dilatedKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
@@ -181,13 +213,123 @@ Clone this Git-Hub repository in the src folder of the interbotix_ws
       # We can use this mask, to elimate other things, they don't have intersection
       mask_bwa = cv2.bitwise_and(maskYellow_dilatedCom,maskRedish_dilatedCom)
       sumMaskBWA = sum(sum(mask_bwa>0))
-      sumMaskYellow = sum(sum(maskYellow>0))
+    
       info =[]
       cX = 0
       cY = 0
       ind = 0
       contours = []
       cont,_=cv2.findContours(mask_bwa, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  
+    **Part 3**
+
+  If the pixels number is greater than 250, and the strawberryFound changed to 'Yellow' now it is not 'nothing', we used the clean masks of Redish and Yellow, we find the centroids of the intersected sections but we have to check if those are within the contours we found (if it is not, it's not a real strawberry), if it is inside, it will be greater or equal to 0. 
+
+      if sumMaskBWA > 250:
+            strawberryFound = 'Yellow'
+            maskYellowRedish = maskRedish_clean + maskYellow_clean
+            redishContour, maskRedish_strawberries = find_contours(maskYellowRedish)
+            for particular in redishContour:
+                for c in cont:
+                    M = cv2.moments(c)
+                    try:
+                        cX=int(M["m10"]/M["m00"])
+                        cY=int(M["m01"]/M["m00"])
+                    except:
+                        continue
+                    inside = cv2.pointPolygonTest(particular,(cX,cY),False)
+                    if inside >=0:
+                        contours.append(particular)
+           
+    **Part 4**
+  
+    If the square is crossing the limits of the screen, we are going to fix it in proportion to the maximum limit either x or y.
+    
+    Now that we ensure that is yellow, we are going to get the real centroid, the one is not dilated extremely. We are going to make a small square to get the average distance and to ignore the ones that less than 0.3 or greater than 0.7 (getting the index of those pixels that are in that range).
+  
+    We remove the area of the yellow strawberry using a black rectangule (all to zero), because if it remains there, as it has red, in the next part can detect as a red one.
+    We save the information in the next order:
+  
+    [Type of strawberry (1,2 or 3), coordinate in X of the centroid, coordinate in Y of the centroid, Average distance]
+  
+    If we get more than strawberry that array will be become into a matrix, with all strawberries.
+    
+    To finish we put the corresponding text.
+  
+    It is a similar process for green and red ones. Look up the [code](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/robot_pkg/strawberryDetection.py)
+   for more detail.
+  
+    *GRAPHIC OF DISTANCES MATRIX*
+  Here you can see that the red square is indeed the centroid, while, the green ones are other pixels that are going to be calculated in the average because they are within the range [0.3, 0.7] .
+
+    ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/DistancesMatrix.png)
+  
+      #Getting the center
+      savedContours = []
+      #w: width
+      #h: height
+      if strawberryFound == 'Yellow':
+          here = True
+          for c in contours:
+              M = cv2.moments(c)
+              try:
+                  cX=int(M["m10"]/M["m00"])
+                  cY=int(M["m01"]/M["m00"])
+              except:
+                  continue
+              if cX+5>640:
+                  upperXLim = 640
+              else:
+                  upperXLim = cX+5
+  
+              if cY+5>480:
+                  upperYLim = 480
+              else:
+                  upperYLim = cY+5
+                  
+              distance=depth_image[cY-5:upperYLim,cX-5:upperXLim]
+              dist1 = distance>=0.3
+              dist2 = distance<=0.7
+              distanceLog=np.logical_and(dist1,dist2)    
+              ind = np.where(distanceLog)
+              avgDist = np.average(distance[ind[0],ind[1]])
+              # Draw the centers
+              if avgDist <= 0.7:
+                  savedContours.append(c)
+                  x,y,w,h= cv2.boundingRect(c)
+                  for i in range(3):
+                       image_blur_hsv[y-10:y+h+10,x-10:x+w+10,i] = 0
+                       
+                  info.append([2,cX,cY,avgDist])
+                  cv2.putText(image1, strawberryFound,(cX-20,c[:,0][:,1].min()-25),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)
+                  if avgDist >=0.3:
+                      cv2.putText(image1, "D= {:.3f} m ".format(avgDist),(cX-30,c[:,0][:,1].min()-10),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)
+                  else:
+                      cv2.putText(image1, "Close!!",(cX-30,c[:,0][:,1].min()-10),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)
+                  cv2.circle(image1, (cX,cY),2,(0,0,0),-1)
+  
+    **Part 5**
+  
+  The last part it just to circle all the found contours. And we make a cross in the middle of the screen to just for ilustration. If there's nothing detected, the image is returned itself.
+  
+  The last three lines is for ordering in an ascending order the set of strawberries (first the red, second the yellow, third the green).
+
+      circled1 = circle_contour(image1, savedContours)
+      circled1 = cv2.line(circled1,(320,0),(320,480),color=(0,0,0),thickness=1)
+      circled1 = cv2.line(circled1,(0,240),(640,240),color=(0,0,0),thickness=1)
+      if here:
+          bgr = cv2.cvtColor(circled1, cv2.COLOR_RGB2BGR)
+      else:
+          bgr = cv2.cvtColor(image1, cv2.COLOR_RGB2BGR)
+      
+      if len(info) == 0:
+          return bgr,[[]]
+      # we're done, convert back to original color scheme
+      
+      temp = np.array(info)
+      
+      info = temp[np.lexsort((temp[:,0],))]
+      return bgr,info
 ### Camera Node
 ### Robot Node
 ## USAGE
@@ -225,3 +367,4 @@ Also you have to close the moveit simulation and to exit the terminal where that
 - [Viper300X](https://docs.trossenrobotics.com/interbotix_xsarms_docs/specifications/vx300.html)
 - [Interbotix_ros_xsarms](https://docs.trossenrobotics.com/interbotix_xsarms_docs/ros_interface/ros2/software_setup.html)
 - [Camera D415](https://www.intelrealsense.com/depth-camera-d415/)
+

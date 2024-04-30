@@ -46,18 +46,7 @@ def find_strawberry(image,depth_image):
     here = False
     strawberryFound = 'Nothing'
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image_copy = image
 
-    # Make a consistent size
-    # get largest dimension
-
-    max_dimension = max(image.shape)
-
-    # The maximum window size is 700 by 660 pixels. make it fit in that
-    #scale = 700 / max_dimension
-
-    # resize it. rescale width and hieght with same ratio none since output is 'image'.
-    #image = cv2.resize(image, None, fx=scale, fy=scale)
     image1 = image.copy()
     # we want to eliminate noise from our image. clean. smooth colors without
     # dots
@@ -68,8 +57,7 @@ def find_strawberry(image,depth_image):
     # chroma or the color information.
     # just want to focus on color, segmentation
     image_blur_hsv = cv2.cvtColor(image_blur, cv2.COLOR_RGB2HSV)
-   
-    matrix = depth_image < 0.7 
+    matrix = depth_image <= 0.7 
     
     # This is for converting all to black, the ones that are greater than or equal to 0.7
     for i in range(3):
@@ -77,23 +65,19 @@ def find_strawberry(image,depth_image):
         
     #For HSV, Hue range is [0,179], Saturation range is [0,255] and Value range is [0,255].
     # Filter by colour
-    # 0-10 hue, 
     min_redish = np.array([0, int(150), int(104)])
     max_redish = np.array([int(10/255*179), 255, 255])
     # layer
-    maskredish1 = cv2.inRange(image_blur_hsv, min_redish, max_redish)
-    #cv2.imwrite('maskRed1.jpg', maskRed1)
+    maskRedish = cv2.inRange(image_blur_hsv, min_redish, max_redish)
+
     # birghtness of a color is hue
-    # 170-180 hue, modified to 150 - 160
-    # minimum red amount, max red amount
-    maskRedish = maskredish1+maskredish1
+    # minimum yellow amount, max yellow amount
+
     # Intermediate Strawberries
     min_yellow1 = np.array([int(9/255*179),int(130),int(100)])
     max_yellow1 = np.array([int(27/255*179),int(255),int(255)])
-    maskYellow1 = cv2.inRange(image_blur_hsv,min_yellow1,max_yellow1)
+    maskYellow = cv2.inRange(image_blur_hsv,min_yellow1,max_yellow1)
 
-    
-    maskYellow = maskYellow1 + maskYellow1
     
     smallKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     dilatedKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
@@ -117,15 +101,14 @@ def find_strawberry(image,depth_image):
     # We can use this mask, to elimate other things, they don't have intersection
     mask_bwa = cv2.bitwise_and(maskYellow_dilatedCom,maskRedish_dilatedCom)
     sumMaskBWA = sum(sum(mask_bwa>0))
-    sumMaskYellow = sum(sum(maskYellow>0))
     info =[]
     cX = 0
     cY = 0
-    distances =[]
+    distance = 0
     ind = 0
     contours = []
     cont,_=cv2.findContours(mask_bwa, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    if (sumMaskBWA > 250 or sumMaskYellow) and len(cont)<4:
+    if sumMaskBWA > 250:
         strawberryFound = 'Yellow'
         maskYellowRedish = maskRedish_clean + maskYellow_clean
         redishContour, maskRedish_strawberries = find_contours(maskYellowRedish)
@@ -140,7 +123,6 @@ def find_strawberry(image,depth_image):
                 inside = cv2.pointPolygonTest(particular,(cX,cY),False)
                 if inside >=0:
                     contours.append(particular)
-        mask_bwa = cv2.dilate(mask_bwa,kernel, iterations=3)
     
     # Getting the center
     savedContours = []
@@ -155,12 +137,19 @@ def find_strawberry(image,depth_image):
                 cY=int(M["m01"]/M["m00"])
             except:
                 continue
-            if cX+5>640 or cY+5>480:
-                distance=depth_image[cY-5:480,cX-5:640]
+            if cX+5>640:
+                upperXLim = 640
             else:
-                distance=depth_image[cY-5:cY+5,cX-5:cX+5]
-            dist1 = distance>0
-            dist2 = distance<0.7
+                upperXLim = cX+5
+
+            if cY+5>480:
+                upperYLim = 480
+            else:
+                upperYLim = cY+5
+                
+            distance=depth_image[cY-5:upperYLim,cX-5:upperXLim]
+            dist1 = distance>=0.3
+            dist2 = distance<=0.7
             distanceLog=np.logical_and(dist1,dist2)    
             ind = np.where(distanceLog)
             avgDist = np.average(distance[ind[0],ind[1]])
@@ -179,8 +168,6 @@ def find_strawberry(image,depth_image):
                     cv2.putText(image1, "Close!!",(cX-30,c[:,0][:,1].min()-10),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)
                 cv2.circle(image1, (cX,cY),2,(0,0,0),-1)
                 
-        circled1 = circle_contour(image1, savedContours)
-        image1 = circled1
     # Red strawberries
     min_red = np.array([0, 160, 90])
     max_red = np.array([int(6/255*179), 255, 255])
@@ -212,12 +199,20 @@ def find_strawberry(image,depth_image):
   #          ind = ind + 1
             cX=int(M["m10"]/M["m00"])
             cY=int(M["m01"]/M["m00"])
-            if cX+5>640 or cY+5>480:
-                distance=depth_image[cY-5:480,cX-5:640]
+            if cX+5>640:
+                upperXLim = 640
             else:
-                distance=depth_image[cY-5:cY+5,cX-5:cX+5]
-            dist1 = distance>0
-            dist2 = distance<0.7
+                upperXLim = cX+5
+
+            if cY+5>480:
+                upperYLim = 480
+            else:
+                upperYLim = cY+5
+                
+            distance=depth_image[cY-5:upperYLim,cX-5:upperXLim]
+            
+            dist1 = distance>=0.3
+            dist2 = distance<=0.7
             distanceLog=np.logical_and(dist1,dist2)    
             ind = np.where(distanceLog)
             
@@ -233,7 +228,7 @@ def find_strawberry(image,depth_image):
                 else:
                     cv2.putText(image1, "Close!!",(cX-30,c[:,0][:,1].min()-10),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)
                 cv2.circle(image1, (cX,cY),2,(0,0,0),-1)
-        circled1 = circle_contour(image1, savedContours)
+        
     
     # Green Strawberries
     #For HSV, Hue range is [0,179], Saturation range is [0,255] and Value range is [0,255].
@@ -262,12 +257,19 @@ def find_strawberry(image,depth_image):
             M = cv2.moments(c)
             cX=int(M["m10"]/M["m00"])
             cY=int(M["m01"]/M["m00"])
-            if cX+5>640 or cY+5>480:
-                distance=depth_image[cY-5:480,cX-5:640]
+            if cX+5>640:
+                upperXLim = 640
             else:
-                distance=depth_image[cY-5:cY+5,cX-5:cX+5]
-            dist1 = distance>0
-            dist2 = distance<0.7
+                upperXLim = cX+5
+
+            if cY+5>480:
+                upperYLim = 480
+            else:
+                upperYLim = cY+5
+                
+            distance=depth_image[cY-5:upperYLim,cX-5:upperXLim]
+            dist1 = distance>=0.3
+            dist2 = distance<=0.7
             distanceLog=np.logical_and(dist1,dist2)    
             ind = np.where(distanceLog)
             avgDist = np.average(distance[ind[0],ind[1]])
@@ -282,9 +284,9 @@ def find_strawberry(image,depth_image):
                     cv2.putText(image1, "Close!!",(cX-30,c[:,0][:,1].min()-10),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)
                 cv2.circle(image1, (cX,cY),2,(0,0,0),-1)
         
-        circled1 = circle_contour(image1, savedContours)
-        circled1 = cv2.line(circled1,(320,0),(320,480),color=(0,0,0),thickness=1)
-        circled1 = cv2.line(circled1,(0,240),(640,240),color=(0,0,0),thickness=1)
+    circled1 = circle_contour(image1, savedContours)
+    circled1 = cv2.line(circled1,(320,0),(320,480),color=(0,0,0),thickness=1)
+    circled1 = cv2.line(circled1,(0,240),(640,240),color=(0,0,0),thickness=1)
     if here:
         bgr = cv2.cvtColor(circled1, cv2.COLOR_RGB2BGR)
     else:

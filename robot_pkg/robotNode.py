@@ -78,28 +78,33 @@ class Robot(Node):
             print("Angle11 = "+str(self.angleJoint))
             self.bot.arm.set_single_joint_position(joint_name='waist', position=math.radians(self.angleJoint),moving_time=self.moving_time,accel_time = 0.02)
         else:
-            if redInfo[0,1].astype(int)<=self.limSupX+10 and redInfo[0,1].astype(int)>=self.limInfX-10:
+            if self.deltaJoint == -1:
+                chosenOne = redInfo[0,:]
+            else:
+                chosenOne = redInfo[-1,:]
+        
+            if chosenOne[1].astype(int)<=self.limSupX+10 and chosenOne[1].astype(int)>=self.limInfX-10:
                 self.moving_time = 1
                 print("moving_time = 1")
             else:
                 self.moving_time = 0.1
                 
-            if redInfo[0,1].astype(int)>self.limSupX:
+            if chosenOne[1].astype(int)>self.limSupX:
                 self.deltaStrawW = -1
                 print("deltaStrawW = -1")
                 print("Angle12 = "+str(self.angleJoint))
-            elif redInfo[0,1].astype(int)<self.limInfX:
+            elif chosenOne[1].astype(int)<self.limInfX:
                 self.deltaStrawW = 1
                 print("deltaStrawW = 1")
                 print("Angle12 = "+str(self.angleJoint))
             else:
                 self.deltaStrawW = 0
                 self.bot.gripper.release()
-                self.deltaY = round(float((redInfo[0,3]-0.07)*math.sin(math.radians(self.angleJoint))),3)
-                print("DistanceY = "+str(round(redInfo[0,3]-0.06,3))+"sinTheta = " +str(math.sin(math.radians(self.angleJoint))))
-                self.deltaX = round(float((redInfo[0,3]-0.07)*math.cos(math.radians(self.angleJoint))),3)
-                print("DistanceX = "+str(round(redInfo[0,3]-0.06,3))+"cosTheta = " +str(math.cos(math.radians(self.angleJoint))))
-                self.deltaZ = round(float(self.fixedZ+(((self.fixedZLim-redInfo[0,2])/self.fixedZPixels)*self.fixedZMeters)),3)
+                self.deltaY = round(float((chosenOne[3]-0.07)*math.sin(math.radians(self.angleJoint))),3)
+                print("DistanceY = "+str(round(chosenOne[3]-0.06,3))+"sinTheta = " +str(math.sin(math.radians(self.angleJoint))))
+                self.deltaX = round(float((chosenOne[3]-0.07)*math.cos(math.radians(self.angleJoint))),3)
+                print("DistanceX = "+str(round(chosenOne[3]-0.06,3))+"cosTheta = " +str(math.cos(math.radians(self.angleJoint))))
+                self.deltaZ = round(float(self.fixedZ+(((self.fixedZLim-chosenOne[2])/self.fixedZPixels)*self.fixedZMeters)),3)
                 
                 print("deltaY "+str(round(self.deltaY*0.5,3)))
                 print("deltaX "+str(round(self.deltaX*0.5,3)))
@@ -114,7 +119,6 @@ class Robot(Node):
                 self.bot.arm.set_ee_pose_components(z=self.fixedZ,moving_time=2)
                 self.angleJoint = math.degrees(self.bot.arm.get_single_joint_command("waist"))
                 print("AngleJoint = "+str(self.angleJoint))
-               
             
             print("Outside deltaStrawW = "+str(self.deltaStrawW))
             self.angleJoint =  self.angleJoint + self.deltaStrawW
@@ -137,6 +141,7 @@ class Robot(Node):
 def main(args=None):
     rclpy.init(args=args)
     robot = Robot()
+    
     try:
         rclpy.spin(robot)
     except KeyboardInterrupt:
@@ -150,6 +155,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
-
-

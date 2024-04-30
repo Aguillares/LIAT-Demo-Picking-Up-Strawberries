@@ -46,23 +46,15 @@ def find_strawberry(image,depth_image):
     here = False
     strawberryFound = 'Nothing'
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image_copy = image
 
     # Make a consistent size
     # get largest dimension
 
-    max_dimension = max(image.shape)
-
-    # The maximum window size is 700 by 660 pixels. make it fit in that
-    #scale = 700 / max_dimension
-
-    # resize it. rescale width and hieght with same ratio none since output is 'image'.
-    #image = cv2.resize(image, None, fx=scale, fy=scale)
     image1 = image.copy()
     # we want to eliminate noise from our image. clean. smooth colors without
     # dots
     # Blurs an image using a Gaussian filter. input, kernel size, how much to filter, empty)
-    image_blur = cv2.GaussianBlur(image, (5, 5), 0)
+    image_blur = cv2.GaussianBlur(image1, (5, 5), 0)
     #image_blur = image
     # unlike RGB, HSV separates luma, or the image intensity, from
     # chroma or the color information.
@@ -86,7 +78,7 @@ def find_strawberry(image,depth_image):
     # birghtness of a color is hue
     # 170-180 hue, modified to 150 - 160
     # minimum red amount, max red amount
-    maskRedish = maskredish1+maskredish1
+    maskRedish = maskredish1
     # Intermediate Strawberries
     min_yellow1 = np.array([int(9/255*179),int(130),int(100)])
     max_yellow1 = np.array([int(27/255*179),int(255),int(255)])
@@ -116,20 +108,17 @@ def find_strawberry(image,depth_image):
     
     # We can use this mask, to elimate other things, they don't have intersection
     mask_bwa = cv2.bitwise_and(maskYellow_dilatedCom,maskRedish_dilatedCom)
-    cv2.imshow('Dilatated Mask',maskYellow_dilatedCom+maskRedish_dilatedCom)
     sumMaskBWA = sum(sum(mask_bwa>0))
     sumMaskYellow = sum(sum(maskYellow>0))
     info =[]
     cX = 0
     cY = 0
-    distances =[]
     ind = 0
     contours = []
     cont,_=cv2.findContours(mask_bwa, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     if (sumMaskBWA > 250 or sumMaskYellow) and len(cont)<4:
         strawberryFound = 'Yellow'
         maskYellowRedish = maskRedish_clean + maskYellow_clean
-        cv2.imshow('maskYellowRedish',maskYellowRedish)
         redishContour, maskRedish_strawberries = find_contours(maskYellowRedish)
         for particular in redishContour:
             for c in cont:
@@ -140,13 +129,9 @@ def find_strawberry(image,depth_image):
                 except:
                     continue
                 inside = cv2.pointPolygonTest(particular,(cX,cY),False)
-                if inside >=0:
+                if inside >= 0:
                     contours.append(particular)
         mask_bwa = cv2.dilate(mask_bwa,kernel, iterations=3)
-        cv2.imshow("Intersection",mask_bwa)
-        
-       # image_blur_hsv = image_blur_hsv*maskYellowRedish
-    cv2.imshow("showing",image_blur_hsv)
     
     # Getting the center
     savedContours = []
@@ -170,7 +155,6 @@ def find_strawberry(image,depth_image):
             distanceLog=np.logical_and(dist1,dist2)    
             ind = np.where(distanceLog)
             avgDist = np.average(distance[ind[0],ind[1]])
-            #distance = 0.4
             # Draw the centers
             if avgDist <= 0.7:
                 savedContours.append(c)
@@ -185,12 +169,7 @@ def find_strawberry(image,depth_image):
                 else:
                     cv2.putText(image1, "Close!!",(cX-30,c[:,0][:,1].min()-10),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)
                 cv2.circle(image1, (cX,cY),2,(0,0,0),-1)
-          
-                
-        circled1 = circle_contour(image1, savedContours)
-        cv2.imshow('Circle1',circled1)
-        image1 = circled1
-    cv2.imshow("Removing",image_blur_hsv)
+       
     # Red strawberries
     min_red = np.array([0, 160, 90])
     max_red = np.array([int(6/255*179), 255, 255])
@@ -204,7 +183,7 @@ def find_strawberry(image,depth_image):
     max_red2 = np.array([179, 255, 255])
     maskRed2 = cv2.inRange(image_blur_hsv, min_red2, max_red2)
     maskRed = maskRed1+maskRed2
-    cv2.imshow('Red Strawbery',maskRed)
+    
     maskRed_eroded = cv2.erode(maskRed, kernel, iterations = 1)
     maskRed_dilated = cv2.dilate(maskRed_eroded,dilatedKernel, iterations=1)
     maskRed_closed = cv2.morphologyEx(maskRed_dilated, cv2.MORPH_CLOSE, kernel)
@@ -214,7 +193,7 @@ def find_strawberry(image,depth_image):
     if resMaskRed>250:
         strawberryFound = 'Red'
         redContour, maskRed_strawberries = find_contours(maskRed)
-        cv2.imshow("Red Strawberries Real",maskRed_strawberries)
+       
     if strawberryFound == 'Red':
         here = True
         for c in redContour:
@@ -243,29 +222,20 @@ def find_strawberry(image,depth_image):
                 else:
                     cv2.putText(image1, "Close!!",(cX-30,c[:,0][:,1].min()-10),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)
                 cv2.circle(image1, (cX,cY),2,(0,0,0),-1)
-        circled1 = circle_contour(image1, savedContours)
     
     # Green Strawberries
     #For HSV, Hue range is [0,179], Saturation range is [0,255] and Value range is [0,255].
     # Filter by colour
-    # 0-10 hue, modified to 0 - 3
     # minimum green amount, max green amount
     min_green = np.array([int(70/2), int(0.25*255), 0.15*255])
     max_green = np.array([int(100/2), int(1*255), 0.8*255])
     
     maskGreen = cv2.inRange(image_blur_hsv,min_green,max_green)
     
-    
     maskGreen_eroded = cv2.erode(maskGreen, kernel, iterations = 1)
     maskGreen_dilated = cv2.dilate(maskGreen_eroded,dilatedKernel, iterations=1)
     maskGreen_closed = cv2.morphologyEx(maskGreen_dilated, cv2.MORPH_CLOSE, kernel)
     maskGreen_clean = cv2.morphologyEx(maskGreen_closed,cv2.MORPH_OPEN,smallKernel)
-    
-    cv2.imshow('maskGreen',maskGreen)
-    cv2.imshow('maskGreen_eroded',maskGreen_eroded)
-    cv2.imshow('maskGreen_dilated',maskGreen_dilated)
-    cv2.imshow('maskGreen_closed',maskGreen_closed)
-    cv2.imshow('maskGreen_clean',maskGreen_clean)
 
     maskGreenBool = maskGreen_clean>0
     
@@ -274,7 +244,6 @@ def find_strawberry(image,depth_image):
     if resMaskGreen>250:
         strawberryFound = 'Green'
         greenContour, maskGreen_strawberries = find_contours(maskGreen)
-        
     if strawberryFound == 'Green':
         here = True
         for c in greenContour:
@@ -300,14 +269,14 @@ def find_strawberry(image,depth_image):
                 else:
                     cv2.putText(image1, "Close!!",(cX-30,c[:,0][:,1].min()-10),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)
                 cv2.circle(image1, (cX,cY),2,(0,0,0),-1)
-        circled1 = circle_contour(image1, savedContours)
-        circled1 = cv2.line(circled1,(320,0),(320,480),color=(0,0,0),thickness=1)
-        circled1 = cv2.line(circled1,(0,240),(640,240),color=(0,0,0),thickness=1)
+        
+    circled1 = circle_contour(image1, savedContours)
+    circled1 = cv2.line(circled1,(320,0),(320,480),color=(0,0,0),thickness=1)
+    circled1 = cv2.line(circled1,(0,240),(640,240),color=(0,0,0),thickness=1)
     if here:
         bgr = cv2.cvtColor(circled1, cv2.COLOR_RGB2BGR)
     else:
         bgr = cv2.cvtColor(image1, cv2.COLOR_RGB2BGR)
-    
     
     if len(info) == 0:
         return bgr,[[]]
@@ -317,4 +286,3 @@ def find_strawberry(image,depth_image):
     
     info = temp[np.lexsort((temp[:,0],))]
     return bgr,info
-

@@ -19,8 +19,10 @@ class Robot(Node):
         self.deltaStrawZ = 0
         self.deltaX = 0
         self.deltaY = 0
-        self.fixedZ = 0.4
+        self.fixedZ = 0.4 #Minimum height of the robot with the coordinates (x = 0,y = 0)
         self.deltaZ = 0
+        # IMPORTANT DON'T ALTER THIS PART.
+        # IT IS VITAL TO MOVE THE ROBOT ACCORDING TO THE HEIGHT OF THE 
         self.fixedZPixels = 95
         self.fixedZMeters = 0.085
         self.fixedZLim = 335

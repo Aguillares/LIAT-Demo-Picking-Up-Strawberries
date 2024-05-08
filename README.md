@@ -559,6 +559,7 @@ The next images can show the diferences and we have to be careful when we interp
   You can see we go up and later we turn the robot using just the waist, however, it is not possible to descend in that direction when you give the absolute coordinates it returns to the front. Which is logical, because if you can turn the robot along the axis Z with the same absolute coordinates, so the robot is coded to get just one if that's the case (when the waist angle is 0).
 
   ![Robot Side View](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/videos/ROBOT%20SIDE%20VIEW.webm)
+  
   ![Robot Top View](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/videos/ROBOT%20TOP%20VIEW.webm)
 
   One way to solve this is to put the robot a little forward; nevertheless, we have range problem now since the robot is in distance between the frame and itself of 45 cm approximately, and the minimum distance that we could test was 20cm of radio, if we gave less than that an error appears that the robot can't do that movement.

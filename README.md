@@ -655,9 +655,9 @@ The last thing, we have the limits in X (Camera Axis), in those we know the enou
   
   We receive the data and we make it as the original matrix. We see if there are red ones, and we organize them again in ascending order dependening on the X picels column (second column).
 
-    You can watch the organizing process.
+  You can observe the organizing process.
     
-  *Received information*
+  *Received Information*
     
   ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/ReceivedInformation.png)
 

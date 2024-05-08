@@ -217,10 +217,11 @@ Here you can see that the red square is indeed the centroid, while, the green on
                     cv2.circle(image1, (cX,cY),2,(0,0,0),-1)
           return savedContours,info,image1,image_blur_hsv
         
-- find_strawberry()
+- find_strawberry().
+  
   **Part 1**
 
-  This is the longest function of this code. So, we are going to explain the main parts.
+  This is the longest unction of this code. So, we are going to explain the main parts.
   At the beginning there is a supposition that there are no strawberries. We make a copy of the image, we blur it to remove part of the noise. The original image comes as BGR, so we convert it into a RGB, and we convert it again but in HSV because it is easier to work with the images with this format.
 
   At the end we become all the pixels that have bigger distance than 0.7 m into black in the HSV image, because we want to ignore them when we detect the strawberries, since if they are not eliminated things that have the enough size to be considered as strawberry but a little far away can be detected; however, this is not desired insamuch as it can affect the detection due to things that are out of desired range (0.3m to 0.7m) .
@@ -302,7 +303,8 @@ Here you can see that the red square is indeed the centroid, while, the green on
 
   We get the sum of the number of pixels that are in the intersection. And finding the contour of all that have intersection.
 
-  **IMPORTANT NOTE:**
+  **IMPORTANT NOTE**
+
   The next explanation is just for yellow-redish strawberry.
 
   *Case strawberry*
@@ -513,6 +515,7 @@ The next images can show the diferences and we have to be careful when we interp
 
 
   **Important Note**
+  
   We couldn't use the relative positions for VX300 nor VX300s with the real ones, just with the simulated ones worked fine.
   We considered to use absolute coordinates just, but still we had some problems.
 
@@ -556,7 +559,7 @@ The next images can show the diferences and we have to be careful when we interp
       from std_msgs.msg import Float32MultiArray  
       from interbotix_xs_modules.xs_robot.arm import InterbotixManipulatorXS
    
-- Class and constructor
+- Class and constructor.
 
   You can see we go up and later we turn the robot using just the waist, however, it is not possible to descend in that direction when you give the absolute coordinates it returns to the front. Which is logical, because if you can turn the robot along the axis Z with the same absolute coordinates, so the robot is coded to get just one if that's the case (when the waist angle is 0).
 
@@ -601,7 +604,7 @@ The next images can show the diferences and we have to be careful when we interp
 ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/fixedZ.png)
 
 
-The last thing, we have the limits in X (Camera Axis), in those we know in the enough range to be picked, they are in pixels.
+The last thing, we have the limits in X (Camera Axis), in those we know the enough range to be picked, they are in pixels.
 
     
         class Robot(Node):
@@ -648,7 +651,7 @@ The last thing, we have the limits in X (Camera Axis), in those we know in the e
 
   -callback(). This function makes all the robot movements according the information received.
   
-    We receive the data and we make it as the original matrix. We see if there are red ones, and we organize them again in ascending order dependening on the X picels column (second column).
+  We receive the data and we make it as the original matrix. We see if there are red ones, and we organize them again in ascending order dependening on the X picels column (second column).
 
     You can watch the organizing process.
     
@@ -665,6 +668,7 @@ The last thing, we have the limits in X (Camera Axis), in those we know in the e
   The movement speed will decrease if it is too close to the selected X range.
   
   **Part 1**
+  
             info = np.array(msg.data)
             info = info.reshape(msg.layout.dim[1].size,msg.layout.dim[0].size)
             redInfo = []
@@ -691,6 +695,7 @@ The last thing, we have the limits in X (Camera Axis), in those we know in the e
                     self.moving_time = 0.1
 
   **Part 2**
+  
    When it is found a red strawberry *deltaJoint* is ignored and we use *deltaStrawW* instead. 
 
    See the process with the next pictures.
@@ -707,7 +712,7 @@ The last thing, we have the limits in X (Camera Axis), in those we know in the e
   
   ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/DeltaStrawWCamera2.png)
 
-  When it is in the middle, now it will make all the calculations to approach the chosen strawberry.
+  When it is in the middle, now it will make all the calculations to approach to the chosen strawberry.
 
   
   **Getting the Strawberry Distance**

@@ -101,7 +101,8 @@ pip install pyrealsense2
 Clone this Git-Hub repository in the src folder of the interbotix_ws
 ## EXPLANATION
 ### Strawberry detection
-- headers.
+
+- Headers.
   The first thing is to import all the required modules and to classify the different strawberries, 1 for red, 2 for yellow and 3 for green.
 
       from __future__ import division
@@ -425,7 +426,8 @@ Here you can see that the red square is indeed the centroid, while, the green on
   
   
 ### Camera Node
-- headers.
+
+- Headers.
   The first thing is to import all the required modules.
   
       import rclpy  
@@ -549,7 +551,7 @@ The next images can show the diferences and we have to be careful when we interp
           main()
 
 
-- Headers
+- Headers.
 
       import sys          
       import numpy as np  

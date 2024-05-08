@@ -321,52 +321,52 @@ Here you can see that the red square is indeed the centroid, while, the green on
   ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/FalseYellowStrawberry.png)
   
   
-    min_redish = np.array([0, int(150), int(110)])
-    max_redish = np.array([int(9/255*179), 255, 255])
-    
-    min_redish2 = np.array([int(250/255*179), int(150), int(110)])
-    max_redish2 = np.array([int(255/255*179), 255, 255])
-   
-    maskRedish1 = cv2.inRange(image_blur_hsv, min_redish, max_redish)
-    maskRedish2 = cv2.inRange(image_blur_hsv, min_redish2, max_redish2)
-    
-    maskRedish = maskRedish1 + maskRedish2
-
-    min_yellow1 = np.array([int(9/255*179),int(125),int(125)])
-    max_yellow1 = np.array([int(30/255*179),int(255),int(255)])
-    maskYellow = cv2.inRange(image_blur_hsv,min_yellow1,max_yellow1)
+      min_redish = np.array([0, int(150), int(110)])
+      max_redish = np.array([int(9/255*179), 255, 255])
+      
+      min_redish2 = np.array([int(250/255*179), int(150), int(110)])
+      max_redish2 = np.array([int(255/255*179), 255, 255])
+     
+      maskRedish1 = cv2.inRange(image_blur_hsv, min_redish, max_redish)
+      maskRedish2 = cv2.inRange(image_blur_hsv, min_redish2, max_redish2)
+      
+      maskRedish = maskRedish1 + maskRedish2
   
-    smallKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    mediumKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10, 10))
-    bigKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (12, 11))
+      min_yellow1 = np.array([int(9/255*179),int(125),int(125)])
+      max_yellow1 = np.array([int(30/255*179),int(255),int(255)])
+      maskYellow = cv2.inRange(image_blur_hsv,min_yellow1,max_yellow1)
     
-    maskYellow_eroded = cv2.erode(maskYellow, smallKernel, iterations = 1)
+      smallKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+      mediumKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+      kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10, 10))
+      bigKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (12, 11))
+      
+      maskYellow_eroded = cv2.erode(maskYellow, smallKernel, iterations = 1)
+      
+      maskYellow_dilated = cv2.dilate(maskYellow_eroded,kernel, iterations=1)
+      maskYellow_closed = cv2.morphologyEx(maskYellow_dilated, cv2.MORPH_CLOSE, kernel)
+      maskYellow_clean = cv2.morphologyEx(maskYellow_closed,cv2.MORPH_OPEN,smallKernel)
+      
+      maskYellow_dilatedCom = cv2.dilate(maskYellow_eroded,mediumKernel, iterations=2)
+      maskYellow_closedCom = cv2.morphologyEx(maskYellow_dilatedCom, cv2.MORPH_CLOSE, kernel)
+      maskYellow_cleanCom = cv2.morphologyEx(maskYellow_closedCom, cv2.MORPH_CLOSE, kernel)
+      
+      maskRedish_eroded = cv2.erode(maskRedish, smallKernel, iterations = 1)
     
-    maskYellow_dilated = cv2.dilate(maskYellow_eroded,kernel, iterations=1)
-    maskYellow_closed = cv2.morphologyEx(maskYellow_dilated, cv2.MORPH_CLOSE, kernel)
-    maskYellow_clean = cv2.morphologyEx(maskYellow_closed,cv2.MORPH_OPEN,smallKernel)
-    
-    maskYellow_dilatedCom = cv2.dilate(maskYellow_eroded,mediumKernel, iterations=2)
-    maskYellow_closedCom = cv2.morphologyEx(maskYellow_dilatedCom, cv2.MORPH_CLOSE, kernel)
-    maskYellow_cleanCom = cv2.morphologyEx(maskYellow_closedCom, cv2.MORPH_CLOSE, kernel)
-    
-    maskRedish_eroded = cv2.erode(maskRedish, smallKernel, iterations = 1)
-  
-    maskRedish_dilated = cv2.dilate(maskRedish_eroded,kernel, iterations=1)
-    maskRedish_closed = cv2.morphologyEx(maskRedish_dilated, cv2.MORPH_CLOSE, kernel)
-    maskRedish_clean = cv2.morphologyEx(maskRedish_closed,cv2.MORPH_OPEN,smallKernel)
-    
-    maskRedish_dilatedCom = cv2.dilate(maskRedish_eroded,kernel, iterations=2)
-    maskRedish_closedCom = cv2.morphologyEx(maskRedish_dilatedCom, cv2.MORPH_CLOSE, kernel)
-    maskRedish_cleanCom = cv2.morphologyEx(maskRedish_closedCom, cv2.MORPH_CLOSE, kernel)
-    mask_bwa = cv2.bitwise_and(maskYellow_cleanCom,maskRedish_cleanCom)
-    sumMaskBWA = sum(sum(mask_bwa>0)) 
-    info =[]
-    cX = 0
-    cY = 0
-    contours = []
-    cont,_=cv2.findContours(mask_bwa, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+      maskRedish_dilated = cv2.dilate(maskRedish_eroded,kernel, iterations=1)
+      maskRedish_closed = cv2.morphologyEx(maskRedish_dilated, cv2.MORPH_CLOSE, kernel)
+      maskRedish_clean = cv2.morphologyEx(maskRedish_closed,cv2.MORPH_OPEN,smallKernel)
+      
+      maskRedish_dilatedCom = cv2.dilate(maskRedish_eroded,kernel, iterations=2)
+      maskRedish_closedCom = cv2.morphologyEx(maskRedish_dilatedCom, cv2.MORPH_CLOSE, kernel)
+      maskRedish_cleanCom = cv2.morphologyEx(maskRedish_closedCom, cv2.MORPH_CLOSE, kernel)
+      mask_bwa = cv2.bitwise_and(maskYellow_cleanCom,maskRedish_cleanCom)
+      sumMaskBWA = sum(sum(mask_bwa>0)) 
+      info =[]
+      cX = 0
+      cY = 0
+      contours = []
+      cont,_=cv2.findContours(mask_bwa, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
   
     **Part 3**
 

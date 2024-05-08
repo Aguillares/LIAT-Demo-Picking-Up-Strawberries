@@ -149,7 +149,7 @@ class Robot(Node):
                 print("deltaY "+str(round(self.deltaY*0.5,3)))
                 print("deltaX "+str(round(self.deltaX*0.5,3)))
                 print("deltaZ "+str(round(self.deltaZ*1.4,3)))
-                print("rounded deltaZ "+str())
+                print("rounded deltaZ "+str(self.deltaZ))
                 # The 1.4 can be changed, it means that it will go up a little, and it will take the half way in X and Y (0.5),
                 self.bot.arm.set_ee_pose_components(z=round(self.deltaZ*1.4,3), x = round(self.deltaX*0.5,3), y=round(self.deltaY*0.5,3), moving_time=3)
                 # We complete the the path

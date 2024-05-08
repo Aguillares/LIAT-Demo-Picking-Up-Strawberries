@@ -449,7 +449,7 @@ Here you can see that the red square is indeed the centroid, while, the green on
             self.configure_pipeline()
             self.timer = self.create_timer(0.1, self.publish_images)
   
-- configure_pipeline(self):
+- configure_pipeline(self).
   Now we give the corresponding configurations.
   
         def configure_pipeline(self):
@@ -460,7 +460,7 @@ Here you can see that the red square is indeed the centroid, while, the green on
           self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
           self.pipeline.start(self.config)
 
-- publish_images(self):
+- publish_images(self).
   We publish the images that we get, both the depth and the color ones. And also we send information regarding the strawberries types.
   
       def publish_images(self):
@@ -511,17 +511,7 @@ The next images can show the diferences and we have to be careful when we interp
 ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/RobotAxis.png)
 
 
-- headers
 
-      import sys          
-      import numpy as np  
-      import math         
-      import rclpy        
-      from rclpy.node import Node 
-      from std_msgs.msg import Float32MultiArray  
-      from interbotix_xs_modules.xs_robot.arm import InterbotixManipulatorXS 
- 
-- Class and constructor
   **Important Note**
   We couldn't use the relative positions for VX300 nor VX300s with the real ones, just with the simulated ones worked fine.
   We considered to use absolute coordinates just, but still we had some problems.
@@ -531,7 +521,6 @@ The next images can show the diferences and we have to be careful when we interp
       import sys
       from interbotix_xs_modules.xs_robot.arm import InterbotixManipulatorXS
       import numpy as np
-      
       
       def main():
           bot = InterbotixManipulatorXS(
@@ -556,6 +545,19 @@ The next images can show the diferences and we have to be careful when we interp
       if __name__ == '__main__':
           main()
 
+
+- Headers
+
+      import sys          
+      import numpy as np  
+      import math         
+      import rclpy        
+      from rclpy.node import Node 
+      from std_msgs.msg import Float32MultiArray  
+      from interbotix_xs_modules.xs_robot.arm import InterbotixManipulatorXS
+   
+- Class and constructor
+
   You can see we go up and later we turn the robot using just the waist, however, it is not possible to descend in that direction when you give the absolute coordinates it returns to the front. Which is logical, because if you can turn the robot along the axis Z with the same absolute coordinates, so the robot is coded to get just one if that's the case (when the waist angle is 0).
 
   ![Robot Side View](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/videos/ROBOT%20SIDE%20VIEW.webm)
@@ -567,52 +569,184 @@ The next images can show the diferences and we have to be careful when we interp
    ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/MinimumRadioProblem.png)
   
   
-  You can visit the [arm.py](https://github.com/Interbotix/interbotix_ros_toolboxes/blob/main/interbotix_xs_toolbox/interbotix_xs_modules/src/interbotix_xs_modules/arm.py) to see all the functins that you can use for the robot.
-  We create the constructor.
-  The initial Waist position will be 51º
-      class Robot(Node):
+  You can visit the [arm.py](https://github.com/Interbotix/interbotix_ros_toolboxes/blob/main/interbotix_xs_toolbox/interbotix_xs_modules/src/interbotix_xs_modules/arm.py) to see all the functions that you can use for the robot.
+  
+  
+  The initial *waist* position will be 51º, the next two squares show the corresponding movement of the robot.
+
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/DeltaJoints.png)
+
+  Then, we have the concept of *moving_time*, which is the time required from point 1 to point 2, this is the used variable to change the lineal speed.
+
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/MovingTime.png)
+
+ 
+
+  The different deltas are going to be the robot's coordinates.
+
+  As we commented before about the height as we couldn't do it in that way, we tried to use another method, the variables *fixedZPixels, fixedZMeters and fixedZLim* are going to be used to get the required robot height to pick the strawberry.
+
+  The method is based on putting the robot in a fixed height at the beginning and collocating a strawberry at the same height as the robot's gripper we save the Y pixels (Camera Axis), which are 335 px, this means when the strawberry is at that line the gripper and the fruit have the same height with respect to the table, now we move the robot a little upper to make a delta Z (Robot Axis) and as we gave the height to the robot we know in meters how many they were (0.085m), and also we register the new delta Z in pixels, 95 px.
+
+  The images explain the process to get these values.
+
+**Camera perspective**
+
+![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/DeltaZ.png)
+  
+
+**Robot perspective**
+
+![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/fixedZ.png)
+
+
+The last thing, we have the limits in X (Camera Axis), in those we know in the enough range to be picked, they are in pixels.
+
+    
+        class Robot(Node):
+          def __init__(self):
+              super().__init__('robot')
+              self.angleJoint = 51          # [degree]
+              self.moving_time = 0.1
+              self.deltaJoint = -1
+              self.deltaStrawW = -1
+              self.deltaX = 0
+              self.deltaY = 0
+              self.fixedZ = 0.4
+              self.deltaZ = 0
+              self.fixedZPixels = 95
+              self.fixedZMeters = 0.085
+              self.fixedZLim = 335
+              self.limInfX= 340
+              self.limSupX= 360
+  
+              self.bot = InterbotixManipulatorXS(
+                  robot_model='vx300',
+                  group_name='arm',
+                  gripper_name='gripper',
+                  accel_time = 0.02,
+                  moving_time = 3.0
+              )
+              self.bot
+              
+              if self.bot.arm.group_info.num_joints < 5:
+                  self.get_logger().fatal('The robot has to have at least 5 joints!')
+                  self.bot.shutdown()
+                  sys.exit()
+              
+              self.initialPosition()
+              
+              self.subscription = self.create_subscription(
+                  Float32MultiArray,
+                  'strawberry_info',
+                  self.callback,
+                  1
+              )
+              
+              self.subscription  
+
+  -callback(). This function makes all the robot movements according the information received.
+  
+    We receive the data and we make it as the original matrix. We see if there are red ones, and we organize them again in ascending order dependening on the X picels column (second column).
+
+    You can watch the organizing process.
+    
+  *Received information*
+    
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/ReceivedInformation.png)
+
+  *Red Info*
+  
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/RedInfo.png)
+
+  If there are more than one strawberry, the robot will select the one that is more in the left if *waist movement* is CW and the more right if it is CCW.
+
+  The movement speed will decrease if it is too close to the selected X range.
+  
+  **Part 1**
+            info = np.array(msg.data)
+            info = info.reshape(msg.layout.dim[1].size,msg.layout.dim[0].size)
+            redInfo = []
+            if len(info[0]) != 0:
+                redInfo = info[info[:,0].astype(int) == 1,:]
+                redInfo = redInfo[np.lexsort((redInfo[:,1],))]
+                print("RED INFO ",str(redInfo))
+            
+            print("Received strawberry information:", str(info))
+          
+            if len(redInfo) == 0:
+                self.moving_time = 0.1
+                self.angleJoint = self.angleJoint + self.deltaJoint
+                self.bot.arm.set_single_joint_position(joint_name='waist', position=math.radians(self.angleJoint),moving_time=self.moving_time,accel_time = 0.02)
+            else:
+                if self.deltaJoint == -1:
+                    chosenOne = redInfo[0,:]
+                else:
+                    chosenOne = redInfo[-1,:]
         
-        def __init__(self):
-            super().__init__('robot')
-            self.angleJoint = 51          # [degree]
-            self.moving_time = 0.1
-            self.deltaJoint = -1
-            self.deltaStrawW = -1
-            self.deltaX = 0
-            self.deltaY = 0
-            self.fixedZ = 0.4
-            self.deltaZ = 0
-            self.fixedZPixels = 95
-            self.fixedZMeters = 0.085
-            self.fixedZLim = 335
-            self.limInfX= 340
-            self.limSupX= 360
+                if chosenOne[1].astype(int)<=self.limSupX+10 and chosenOne[1].astype(int)>=self.limInfX-10:
+                    self.moving_time = 1
+                else:
+                    self.moving_time = 0.1
 
-            self.bot = InterbotixManipulatorXS(
-                robot_model='vx300',
-                group_name='arm',
-                gripper_name='gripper',
-                accel_time = 0.02,
-                moving_time = 3.0
-            )
-            self.bot
-            
-            if self.bot.arm.group_info.num_joints < 5:
-                self.get_logger().fatal('The robot has to have at least 5 joints!')
-                self.bot.shutdown()
-                sys.exit()
-            
-            self.initialPosition()
-            
-            self.subscription = self.create_subscription(
-                Float32MultiArray,
-                'strawberry_info',
-                self.callback,
-                1
-            )
-            
-            self.subscription  
+  **Part 2**
+   When it is found a red strawberry *deltaJoint* is ignored and we use *deltaStrawW* instead. 
 
+   See the process with the next pictures.
+   
+  **Robot Perspective**
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/DeltaStrawW1.png)
+
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/DeltaStrawW2.png)
+
+
+  **Camera Perspective**
+  
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/DeltaStrawWCamera1.png)
+  
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/DeltaStrawWCamera2.png)
+
+  When it is in the middle, now it will make all the calculations to approach the chosen strawberry.
+
+  
+  **Getting the Strawberry Distance**
+
+
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/GripperStrawberryDistance.png)
+
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/Getting_dx_dy.png)
+
+  
+  The used formulas were deducted in the next way.
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/FormulaDeductions.png)
+  
+  
+            if chosenOne[1].astype(int)>self.limSupX:
+                self.deltaStrawW = -1
+                print("deltaStrawW = -1")
+                print("Angle12 = "+str(self.angleJoint))
+            elif chosenOne[1].astype(int)<self.limInfX:
+                self.deltaStrawW = 1
+                print("deltaStrawW = 1")
+                print("Angle12 = "+str(self.angleJoint))
+            else:
+                self.deltaStrawW = 0
+                self.bot.gripper.release()
+                self.deltaY = round(float((chosenOne[3]-0.07)*math.sin(math.radians(self.angleJoint))),3)
+                self.deltaX = round(float((chosenOne[3]-0.07)*math.cos(math.radians(self.angleJoint))),3)
+                self.deltaZ = round(float(self.fixedZ+(((self.fixedZLim-chosenOne[2])/self.fixedZPixels)*self.fixedZMeters)),3)
+                self.bot.arm.set_ee_pose_components(z=round(self.deltaZ*1.4,3), x = round(self.deltaX*0.5,3), y=round(self.deltaY*0.5,3), moving_time=3)
+                self.bot.arm.set_ee_pose_components(z=self.deltaZ, x = self.deltaX, y=self.deltaY, moving_time=3)
+                self.bot.gripper.grasp()
+                self.bot.arm.set_ee_pose_components(z=self.deltaZ, x = round(self.deltaX*0.5,3), y=round(self.deltaY*0.5,3), moving_time=3)
+                self.bot.arm.set_ee_pose_components(z=0.2,x= 0.28,moving_time=2)
+                self.bot.gripper.release()
+                self.bot.arm.set_ee_pose_components(z=self.fixedZ,moving_time=2)
+                self.angleJoint = math.degrees(self.bot.arm.get_single_joint_command("waist"))
+                    
+            self.angleJoint =  self.angleJoint + self.deltaStrawW
+            self.bot.arm.set_single_joint_position(joint_name='waist', position=math.radians(self.angleJoint),moving_time=self.moving_time,accel_time = 0.02)                
+  
 ## USAGE
 
 ### 1. Step. Open the Moveit.

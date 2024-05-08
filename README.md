@@ -592,6 +592,7 @@ The next images can show the diferences and we have to be careful when we interp
 
 **Camera perspective**
 
+
 ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/DeltaZ.png)
   
 

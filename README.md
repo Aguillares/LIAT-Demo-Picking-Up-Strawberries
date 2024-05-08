@@ -246,7 +246,7 @@ Here you can see that the red square is indeed the centroid, while, the green on
 
   **Original image**
 
-  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/StrawberriesSets/Set30.jpg)
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/RawStrawberries/Picture30.jpg)
 
   **Mask Yellow**
 
@@ -417,6 +417,11 @@ Here you can see that the red square is indeed the centroid, while, the green on
       return bgr,info
 
 
+  **Result image**
+
+  ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/StrawberriesSets/Set30.jpg)
+  
+  
 ### Camera Node
 - headers.
   The first thing is to import all the required modules.
@@ -552,6 +557,15 @@ The next images can show the diferences and we have to be careful when we interp
           main()
 
   You can see we go up and later we turn the robot using just the waist, however, it is not possible to descend in that direction when you give the absolute coordinates it returns to the front. Which is logical, because if you can turn the robot along the axis Z with the same absolute coordinates, so the robot is coded to get just one if that's the case (when the waist angle is 0).
+
+  ![Robot Side View](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/videos/ROBOT%20SIDE%20VIEW.webm)
+  
+  ![Robot Top View](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/videos/ROBOT%20TOP%20VIEW.webm)
+
+  One way to solve this is to put the robot a little forward; nevertheless, we have range problem now since the robot is in distance between the frame and itself of 45 cm approximately, and the minimum distance that we could test was 20cm of radio, if we gave less than that an error appears that the robot can't do that movement.
+
+   ![](https://github.com/Aguillares/LIAT-Demo-Picking-Up-Strawberries/blob/master/images/Explanation/MinimumRadioProblem.png)
+  
   
   You can visit the [arm.py](https://github.com/Interbotix/interbotix_ros_toolboxes/blob/main/interbotix_xs_toolbox/interbotix_xs_modules/src/interbotix_xs_modules/arm.py) to see all the functins that you can use for the robot.
   We create the constructor.

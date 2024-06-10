@@ -26,7 +26,7 @@ The first step that have to do is to install the software to use the robot depen
 - Computer running Ubuntu Linux 20.04 or 22.04
 
 #### Procedure of installation
-You should open the terminal where you want it to be downloaded, where it says "humble", you should put the distrabution that you have.
+You should open the terminal where you want it to be downloaded, where it says "humble", you should put the distribution that you have.
 
 | ROS Distro       | Manipulators       | Rovers             | Turrets            | Crawlers           |
 | ---------------- | :----------------: | :----------------: | :----------------: | :----------------: |

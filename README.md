@@ -8,11 +8,11 @@
 ## INTRODUCTION
 For this project it was used the robotic arm [ViperX-300](https://docs.trossenrobotics.com/interbotix_xsarms_docs/specifications/vx300.html), which is a robot that belongs to the Interbotix X-Series family of arms featuring the DYNAMIXEL X-Series Smart Servo Motors. ViperX-300 enables access to DYNAMIXEL Wizard Software as well as ROS. This robot has 5 degrees of freedom and a full 360 degree of rotation, the reach is 750mm, total span 1500 mm, the working payload is 750g, and it has wrist rotate.
 
-For the detection part was used an [Intel RealSense Depth Camera D415](https://www.intelrealsense.com/depth-camera-d415/), which can be used indoor as outdoor, although, the documentation says it works within 0.5m to 3m, the minimum distance can reach is 0.3m, any distance less than this will detect as 0.0; also, it has stereoscopic depth technology, anccuray of <2% at 2m, the resolution in both (RGB and Depth) is up to 1280x720.
+For the detection part was used an [Intel RealSense Depth Camera D415](https://www.intelrealsense.com/depth-camera-d415/), which can be used indoor as outdoor, although, the documentation says it works within 0.5m to 3m, the minimum distance can reach is 0.3m, any distance less than this will detect as 0.0; also, it has stereoscopic depth technology, accuracy of <2% at 2m, the resolution in both (RGB and Depth) is up to 1280x720.
 
-This experiment remained just using simple CV according to the three different types of strawberries, smiluting the different stages of ripeness: Green-YellowRedish-Red; obtaining good results. However, this could be made with the use of Machine Learning getting a better results.
+This experiment remained just using simple CV according to the three different types of strawberries, simulating the different stages of ripeness: Green-YellowRedish-Red; obtaining good results. However, this could be made with the use of Machine Learning getting a better results.
 
-A great disadvantage using CV is that the effectiveness of the code can vary depending of the quantity of light, and if something else has a similar shape or colour will detect wrongly, but for demostration purposes it works fine.
+A great disadvantage using CV is that the effectiveness of the code can vary depending of the quantity of light, and if something else has a similar shape or colour will detect wrongly, but for demonstration purposes it works fine.
 
 ## OBJECTIVES
 - To make a code to detect the three different types of strawberries: red, green, yellow-redish. 
